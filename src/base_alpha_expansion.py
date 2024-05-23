@@ -11,10 +11,12 @@ from time import time
 
 class BaseAlphaExpansion(ABC):
     def __init__(self, 
-                 images: list, 
+                 images: list,  # list of PIL.Image
                  init_collage_matrix: np.ndarray = None
     ) -> None:
-        self.images_ = deepcopy(images)
+        self.images_ = []
+        for image in images:
+            self.images_.append(np.array(image, dtype=np.int32))
         self.num_classes_ = len(images)
 
         # set initial collage matrix
@@ -66,7 +68,6 @@ class BaseAlphaExpansion(ABC):
                                    neigb, 
                                    capacity=-1.
                     )
-
 
     @property
     def collage_matrix_seq(self) -> np.ndarray:
