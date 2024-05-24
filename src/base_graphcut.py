@@ -1,6 +1,8 @@
 import numpy as np
 from PIL import Image
 import networkx as nx
+from networkx.algorithms.flow import preflow_push, shortest_augmenting_path, edmonds_karp
+import json
 
 from abc import ABC, abstractmethod
 
@@ -10,7 +12,7 @@ from time import time
 
 class BaseGraphCut(ABC):
     def __init__(self, image_1: Image, image_2: Image) -> None:
-        self.images_ = [np.array(image_1), np.array(image_2)]
+        self.images_ = [np.array(image_1, dtype=np.uint8), np.array(image_2, dtype=np.uint8)]
 
         self._collage_matrix_ = None
         # collage-photo
@@ -84,16 +86,24 @@ class BaseGraphCut(ABC):
         print(f"Edges: Okey; Time = {time() - time_past}")
         time_past = time()
 
+        max_flow, _ = nx.maximum_flow(graph, "s", "t", flow_func=shortest_augmenting_path)
+        # debug
+        print(f"Max flow = {max_flow}: Okey; Time = {time() - time_past}")
+        time_past = time()
+
         # solve minimum cut problem
-        min_energy, (left_partition, right_partition) = nx.minimum_cut(graph, "s", "t")
+        min_energy, (left_partition, right_partition) = nx.minimum_cut(graph, "s", "t", flow_func=shortest_augmenting_path)
+
+        print(f"Min energy = {min_energy}")
 
         # debug
         print(f"Mincut: Okey; Time = {time() - time_past}")
+        print(f"Left partition size = {len(left_partition) - 1}; Right partition size = {len(right_partition) - 1}")
         time_past = time()
 
         # construct collage and collage matrix
         self._collage_matrix_ = np.zeros((im_height, im_width), dtype=bool)
-        self._collage_ = np.empty_like(self.images_[0])
+        self._collage_ = np.zeros_like(self.images_[0], dtype=np.uint8)
 
         for node in left_partition:
             if node != "s":
