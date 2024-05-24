@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import networkx as nx
+from networkx.algorithms.flow import shortest_augmenting_path, edmonds_karp, preflow_push
 
 from abc import ABC, abstractmethod
 from copy import deepcopy
@@ -16,7 +17,7 @@ class BaseAlphaExpansion(ABC):
     ) -> None:
         self.images_ = []
         for image in images:
-            self.images_.append(np.array(image, dtype=np.int32))
+            self.images_.append(np.array(image, dtype=np.uint8))
         self.num_classes_ = len(images)
 
         # set initial collage matrix
@@ -43,6 +44,9 @@ class BaseAlphaExpansion(ABC):
             will be required to set
         """
         im_height, im_width = self.images_[0].shape[0:2]
+
+        # debug
+        print("Initing graph")
 
         # nodes
         self._graph_.add_nodes_from(
@@ -104,6 +108,7 @@ class BaseAlphaExpansion(ABC):
             # debug
             print(f"Iter {iter}; Current alpha = {cur_alpha}")
 
+            # check whether some pixels have changed
             if self._alpha_exp_iter(cur_alpha):
                 # debug
                 print(f"Last energy = {self._energies_[-1]}")
@@ -112,6 +117,17 @@ class BaseAlphaExpansion(ABC):
 
             # debug
             print(f"Last energy = {self._energies_[-1]}\n")
+
+        # build collage
+        im_height, im_width = self.images_[0].shape[0:2]
+        self._collage_ = np.zeros(self.images_[0].shape, dtype=np.uint8)
+        for i in range(im_height):
+            for j in range(im_width):
+                cur_class = self._collage_matrix_[i][j]
+                self._collage_[i][j] = self.images_[cur_class][i][j]
+
+        # debug
+        print("Collage's built")
 
     
     def _reset_results(self):
@@ -153,11 +169,18 @@ class BaseAlphaExpansion(ABC):
         print(f"Setting edges: Okey; Time = {time() - time_past}")
         time_past = time()
 
+        # debug
+        max_flow, _ = nx.maximum_flow(self._graph_, "s", "t", flow_func=shortest_augmenting_path)
+        print(f"Max flow: Okey; Time = {time() - time_past}")
+        print(f"Max flow = {max_flow}")
+        time_past = time()
+
         # solve minimum cut problem
-        min_energy, (left_partition, right_partition) = nx.minimum_cut(self._graph_, "s", "t")
+        min_energy, (left_partition, right_partition) = nx.minimum_cut(self._graph_, "s", "t", flow_func=shortest_augmenting_path)
 
         # debug
         print(f"Mincut: Okey; Time = {time() - time_past}")
+        print(f"Pixels changed: {len(right_partition) - 1}")
         time_past = time()
 
         # update collage matrix with new alpha-class pixels
@@ -174,4 +197,4 @@ class BaseAlphaExpansion(ABC):
         print(f"Collage matrix update: Okey; Time = {time() - time_past}")
         time_past = time()
 
-        return len(right_partition) == 1
+        return len(right_partition) <= 1
