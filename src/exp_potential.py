@@ -3,6 +3,8 @@ from PIL import Image
 from .base_graphcut import BaseGraphCut
 
 class ExpGraphCut(BaseGraphCut):
+    """implements duel potential as potts model + exponent of pixels distance
+    """
     def __init__(self, image_1: Image, image_2: Image, lambd: float) -> None:
         """
         Args:

@@ -73,7 +73,7 @@ def main():
         print("Final energy:", graph_cut.compose_collage())
 
         # make result's folder
-        cur_results_path = f"experiments/experiment_exp/results_lambda_another3"
+        cur_results_path = f"experiments/experiment_exp/results_reduce"
         pathlib.Path(cur_results_path).mkdir(exist_ok=True)
 
         # save collage matrix

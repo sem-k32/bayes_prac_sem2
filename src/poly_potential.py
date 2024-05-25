@@ -3,6 +3,8 @@ from PIL import Image
 from .base_graphcut import BaseGraphCut
 
 class PolyGraphCut(BaseGraphCut):
+    """implements duel potential as potts model + polynome of pixels distance
+    """
     def __init__(self, image_1: Image, image_2: Image, alpha: float) -> None:
         """
         Args:

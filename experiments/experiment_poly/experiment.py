@@ -16,18 +16,8 @@ class MyGhraphCut(PolyGraphCut):
             (photo_1, photo_2)
     """
     def uno_potential(self, i: int, j: int, value: int) -> float:
-        # image 0 pixels to include for sure
-        # if (350 <= i <= 500) and (320 <= j <= 500) and value == 1:
-        #     return np.inf
-        # if (550 <= i <= 590) and (820 <= j <= 890) and value == 1:
-        #     return np.inf
-
-        # # image 1 pixels to include for sure
-        # if (700 <= i <= 720) and (800 <= j <= 1280) and value == 0:
-        #     return np.inf
-        # if (500 <= i <= 550) and (50 <= j <= 100) and value == 0:
-        #     return np.inf
-
+        """hardcode some pixels to be in particular class
+        """
         # image 0 pixels to include for sure
         if (200 <= i <= 250) and (150 <= j <= 250) and value == 1:
             return 1e8
