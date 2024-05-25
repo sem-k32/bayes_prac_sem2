@@ -22,7 +22,7 @@ class BaseAlphaExpansion(ABC):
 
         # set initial collage matrix
         if init_collage_matrix is None:
-            image_size = images[0].shape[0:2]
+            image_size = self.images_[0].shape[0:2]
             self._collage_matrix_ = np.random.randint(0, self.num_classes_, size=image_size, dtype=np.int32)
         else:
             self._collage_matrix_ = init_collage_matrix.copy()
@@ -150,18 +150,33 @@ class BaseAlphaExpansion(ABC):
             for j in range(im_width):
                 cur_node = (i, j)
 
-                # add source and target edges
-                self._graph_["s", cur_node]["capacity"] = self.uno_potential(
+                # debug
+                temp_1 = self.uno_potential(
                     i, j, 1, cur_alpha
                 )
-                self._graph_[cur_node, "t"]["capacity"] = self.uno_potential(
+                temp_2 = self.uno_potential(
+                    i, j, 0, cur_alpha
+                )
+                if temp_1 != 0 and temp_1 == temp_2:
+                    raise(f"({i}, {j}) has both uno pot = inf")
+                
+                if temp_1 != 0:
+                    #print("temp_1")
+                if temp_2 != 0:
+                    !!!print("temp_2")
+
+                # add source and target edges
+                self._graph_["s"][cur_node]["capacity"] = self.uno_potential(
+                    i, j, 1, cur_alpha
+                )
+                self._graph_[cur_node]["t"]["capacity"] = self.uno_potential(
                     i, j, 0, cur_alpha
                 )
 
                 neighbours = self.get_neighbours(i, j)
                 for neigb in neighbours:
                     # add outgoing from cur_node to neighbours edge
-                    self._graph_[cur_node, neigb]["capacity"] = self.duel_potential(
+                    self._graph_[cur_node][neigb]["capacity"] = self.duel_potential(
                         i, j, neigb[0], neigb[1], 0, 1, cur_alpha
                     )
 

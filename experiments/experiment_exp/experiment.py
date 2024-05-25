@@ -17,18 +17,52 @@ class MyAlphaExpansion(NormAlphaExtension):
         super().__init__(images, None, alpha)
         # build init matrix with right restricted pixels
         self._collage_matrix_ = self.build_init_col_matr()
+        self._collage_matrix_seq_ = [self._collage_matrix_.copy()]
 
     def uno_potential(self, i: int, j: int, value: int, cur_alpha: int) -> float:
         BIG_NUM = float("inf")
 
         # get node's class
         cur_class = cur_alpha if value == 1 else self._collage_matrix_[i][j]
+        cur_label = self._restricted_pixels(i, j)
 
         # hardcode particular pixels to be in particular class
-        if cur_class == self._restricted_pixels(i, j):
+        if cur_label != -1 and cur_class != cur_label:
             return BIG_NUM
         else:
             return 0.0
+        
+    def get_neighbours(cls, i: int, j: int) -> list:
+        im_height, im_width = cls.images_[0].shape[0:2]
+        kernal_size = 1
+
+        # neighb_list = []
+
+        # # compute patch maximum deviation
+        # row_min_dev = max(-kernal_size, -abs(i))
+        # row_max_dev = min(kernal_size, abs(im_height - 1 - i))
+        # col_min_dev = max(-kernal_size, -abs(j))
+        # col_max_dev = min(kernal_size, abs(im_width - 1 - j))
+        
+        # for row_dev in range(row_min_dev, row_max_dev + 1):
+        #     for col_dev in range(col_min_dev, col_max_dev + 1):
+        #         cur_neighb = (i + row_dev, j + col_dev)
+
+        #         if (row_dev % 2 == 0) and (col_dev % 2 == 1):
+        #             neighb_list.append(cur_neighb)
+        #         if (row_dev % 2 == 1) and (col_dev % 2 == 0):
+        #             neighb_list.append(cur_neighb)
+        neighb_list = []
+        if i != 0:
+            neighb_list.append((i - 1, j))
+        if i != im_height - 1:
+            neighb_list.append((i + 1, j))
+        if j != 0:
+            neighb_list.append((i, j - 1))
+        if j != im_width - 1:
+            neighb_list.append((i, j + 1))
+
+        return neighb_list
     
     def _restricted_pixels(self, i:int, j:int) -> int:
         """return class of the pixel if it is hardcoded. Else returns -1
@@ -57,8 +91,8 @@ class MyAlphaExpansion(NormAlphaExtension):
         return -1
     
     def build_init_col_matr(self) -> np.ndarray:
-        image_size = self.images[0].shape[0:2]
-        # collage_matrix_init = np.zeros(image_size, dtype=np.int32)
+        image_size = self.images_[0].shape[0:2]
+        #collage_matrix_init = np.zeros(image_size, dtype=np.int32)
         collage_matrix_init = np.random.randint(0, self.num_classes_, size=image_size, dtype=np.int32)
 
         for i in range(image_size[0]):
@@ -81,7 +115,7 @@ def main():
     # compute some scale factor
     alpha_factor = (1 / np.max(np.linalg.norm(np.array(image_list[0]) - np.array(image_list[1]), axis=2))) * 2
 
-    print(f"Cur alpha = {alpha_factor}")
+    print(f"Alpha-factor = {alpha_factor}")
 
     collage_class = MyAlphaExpansion(
         image_list,
