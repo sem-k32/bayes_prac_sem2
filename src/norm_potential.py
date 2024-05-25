@@ -29,6 +29,6 @@ class NormAlphaExtension(BaseAlphaExpansion):
         pixel_left = self.images_[class_left][i][j]
         pixel_right = self.images_[class_right][n][k]
 
-        return (class_left != class_right) * self.alpha_ * np.linalg.norm(pixel_left - pixel_right)
+        return (class_left != class_right) * self.alpha_ * np.linalg.norm(pixel_left - pixel_right, ord=2)
 
             

@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image
-from PIL import ImageFilter
+from PIL import ImageOps
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
 
@@ -20,7 +20,8 @@ class MyAlphaExpansion(NormAlphaExtension):
         self._collage_matrix_seq_ = [self._collage_matrix_.copy()]
 
     def uno_potential(self, i: int, j: int, value: int, cur_alpha: int) -> float:
-        BIG_NUM = float("inf")
+        #BIG_NUM = float("inf")
+        BIG_NUM = 1e7
 
         # get node's class
         cur_class = cur_alpha if value == 1 else self._collage_matrix_[i][j]
@@ -92,15 +93,15 @@ class MyAlphaExpansion(NormAlphaExtension):
     
     def build_init_col_matr(self) -> np.ndarray:
         image_size = self.images_[0].shape[0:2]
-        #collage_matrix_init = np.zeros(image_size, dtype=np.int32)
-        collage_matrix_init = np.random.randint(0, self.num_classes_, size=image_size, dtype=np.int32)
+        collage_matrix_init = np.ones(image_size, dtype=np.int32)
+        #collage_matrix_init = np.random.randint(0, self.num_classes_, size=image_size, dtype=np.int32)
 
-        for i in range(image_size[0]):
-            for j in range(image_size[1]):
-                cur_label = self._restricted_pixels(i, j)
+        # for i in range(image_size[0]):
+        #     for j in range(image_size[1]):
+        #         cur_label = self._restricted_pixels(i, j)
 
-                if cur_label != -1:
-                    collage_matrix_init[i][j] = cur_label
+        #         if cur_label != -1:
+        #             collage_matrix_init[i][j] = cur_label
 
         return collage_matrix_init
 
@@ -110,10 +111,12 @@ def main():
     # load and reduce image sizes
     num_images = 5
     reduce_factor = 3
-    image_list = [Image.open(f"data/photo_{i}.jpg").reduce(reduce_factor) for i in range(num_images)]
+    image_list = [ImageOps.grayscale(Image.open(f"data/photo_{i}.jpg").reduce(reduce_factor)) for i in range(num_images)]
 
     # compute some scale factor
-    alpha_factor = (1 / np.max(np.linalg.norm(np.array(image_list[0]) - np.array(image_list[1]), axis=2))) * 2
+    alpha_factor = (1 / np.max(np.linalg.norm(
+        np.expand_dims(np.array(image_list[0]), 2) - np.expand_dims(np.array(image_list[1]), 2), 
+                       axis=2))) * 5
 
     print(f"Alpha-factor = {alpha_factor}")
 
@@ -122,20 +125,22 @@ def main():
         alpha_factor
     )
 
-    collage_class.alpha_expansion()
+    collage_class.alpha_expansion(max_iter=10)
     
     #print(f"Energies: {collage_class.energies}")
 
     # make result's folder
-    cur_results_path = f"experiments/experiment_exp/results_semirandom_init"
+    cur_results_path = f"experiments/experiment_exp/results_greyscale_preproc"
     pathlib.Path(cur_results_path).mkdir(exist_ok=True)
 
     # save collage matrices
-    fig, ax = plt.subplots()
-    ax.imshow(collage_class.collage)
+    for iter, col_matr in enumerate(collage_class.collage_matrix_seq):
+        fig, ax = plt.subplots()
+        ax.imshow(col_matr)
+        fig.savefig(f"{cur_results_path}/col_matr_{iter}.png", format="png")
 
     # save collage
-    Image.fromarray(collage_class.collage).save(f"{cur_results_path}/collage.png", format="png")
+    Image.fromarray(np.squeeze(collage_class.collage, 2)).save(f"{cur_results_path}/collage.png", format="png")
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ class BaseAlphaExpansion(ABC):
     ) -> None:
         self.images_ = []
         for image in images:
-            self.images_.append(np.array(image, dtype=np.uint8))
+            self.images_.append(np.expand_dims(np.array(image, dtype=np.uint8), 2))
         self.num_classes_ = len(images)
 
         # set initial collage matrix
@@ -157,13 +157,13 @@ class BaseAlphaExpansion(ABC):
                 temp_2 = self.uno_potential(
                     i, j, 0, cur_alpha
                 )
-                if temp_1 != 0 and temp_1 == temp_2:
-                    raise(f"({i}, {j}) has both uno pot = inf")
+                # if temp_1 != 0 and temp_1 == temp_2:
+                #     raise(f"({i}, {j}) has both uno pot = inf")
                 
-                if temp_1 != 0:
-                    #print("temp_1")
-                if temp_2 != 0:
-                    !!!print("temp_2")
+                # if temp_1 != 0:
+                #     #print("temp_1")
+                # if temp_2 != 0:
+                #     print("temp_2")
 
                 # add source and target edges
                 self._graph_["s"][cur_node]["capacity"] = self.uno_potential(
@@ -185,17 +185,17 @@ class BaseAlphaExpansion(ABC):
         time_past = time()
 
         # debug
-        max_flow, _ = nx.maximum_flow(self._graph_, "s", "t", flow_func=shortest_augmenting_path)
-        print(f"Max flow: Okey; Time = {time() - time_past}")
-        print(f"Max flow = {max_flow}")
-        time_past = time()
+        # max_flow, _ = nx.maximum_flow(self._graph_, "s", "t", flow_func=preflow_push)
+        # print(f"Max flow: Okey; Time = {time() - time_past}")
+        # print(f"Max flow = {max_flow}")
+        # time_past = time()
 
         # solve minimum cut problem
-        min_energy, (left_partition, right_partition) = nx.minimum_cut(self._graph_, "s", "t", flow_func=shortest_augmenting_path)
+        min_energy, (left_partition, right_partition) = nx.minimum_cut(self._graph_, "s", "t", flow_func=preflow_push)
 
         # debug
         print(f"Mincut: Okey; Time = {time() - time_past}")
-        print(f"Pixels changed: {len(right_partition) - 1}")
+        print(f"Pixels changed: {(len(right_partition) - 1) / (im_height * im_width)}")
         time_past = time()
 
         # update collage matrix with new alpha-class pixels
