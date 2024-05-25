@@ -99,6 +99,8 @@ class BaseAlphaExpansion(ABC):
         ...
 
     def alpha_expansion(self, max_iter: int = 10) -> None:
+        """implemented iterations of alpha expansion algorithm
+        """
         # reset all previous iteration results
         self._reset_results()
 
@@ -137,7 +139,7 @@ class BaseAlphaExpansion(ABC):
         self._collage_ = None
 
     def _alpha_exp_iter(self, cur_alpha: int) -> bool:
-        """solve GraphCut problem and saves collage and collage matrix
+        """solve GraphCut problem for current alpha
 
         Returns: whether no pixels were changed
         """
