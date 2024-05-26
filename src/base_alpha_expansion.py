@@ -17,7 +17,7 @@ class BaseAlphaExpansion(ABC):
     ) -> None:
         self.images_ = []
         for image in images:
-            self.images_.append(np.expand_dims(np.array(image, dtype=np.uint8), 2))
+            self.images_.append(np.array(image, dtype=np.uint8))
         self.num_classes_ = len(images)
 
         # set initial collage matrix

@@ -105,18 +105,15 @@ class MyAlphaExpansion(NormAlphaExtension):
 
         return collage_matrix_init
 
-
         
 def main():
     # load and reduce image sizes
     num_images = 5
     reduce_factor = 3
-    image_list = [ImageOps.grayscale(Image.open(f"data/set1/photo_{i}.jpg").reduce(reduce_factor)) for i in range(num_images)]
+    image_list = [Image.open(f"data/set1/photo_{i}.jpg").reduce(reduce_factor) for i in range(num_images)]
 
     # compute some scale factor
-    alpha_factor = (1 / np.max(np.linalg.norm(
-        np.expand_dims(np.array(image_list[0]), 2) - np.expand_dims(np.array(image_list[1]), 2), 
-                       axis=2))) * 5
+    alpha_factor = (1 / np.max(np.linalg.norm(np.array(image_list[0]) - np.array(image_list[1])))) * 5
 
     print(f"Alpha-factor = {alpha_factor}")
 
@@ -130,7 +127,7 @@ def main():
     #print(f"Energies: {collage_class.energies}")
 
     # make result's folder
-    cur_results_path = f"experiments/experiment_1/results_greyscale_preproc"
+    cur_results_path = f"experiments/experiment_1/results_ones_init2"
     pathlib.Path(cur_results_path).mkdir(exist_ok=True)
 
     # save collage matrices
@@ -139,19 +136,8 @@ def main():
         ax.imshow(col_matr)
         fig.savefig(f"{cur_results_path}/col_matr_{iter}.png", format="png")
 
-    # transform grey picture into color
-    last_col_matrix = collage_class.collage_matrix_seq[-1]
-    # build collage
-    image_list = [Image.open(f"data/set1/photo_{i}.jpg").reduce(reduce_factor) for i in range(num_images)]
-    im_height, im_width = image_list[0].size
-    final_collage = np.zeros((im_height, im_width, 3), dtype=np.uint8)
-    for i in range(im_height):
-        for j in range(im_width):
-            cur_class = last_col_matrix[i][j]
-            final_collage[i][j] = image_list[cur_class][i][j]
-
     # save collage
-    Image.fromarray(final_collage).save(f"{cur_results_path}/collage.png", format="png")
+    Image.fromarray(collage_class.collage).save(f"{cur_results_path}/collage.png", format="png")
 
 
 if __name__ == "__main__":
