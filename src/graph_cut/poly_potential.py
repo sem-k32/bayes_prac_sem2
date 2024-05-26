@@ -35,4 +35,4 @@ class PolyGraphCut(BaseGraphCut):
         if value_1 == value_2:
             return 0
         else:
-            return (0.01 + self.beta_ * np.linalg.norm(self.image_[i][j] - self.image_[n][k], ord=1)) ** self.lambd_
+            return (1-self.beta_ * np.linalg.norm(self.image_[i][j] - self.image_[n][k], ord=1)) ** self.lambd_

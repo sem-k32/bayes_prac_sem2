@@ -47,9 +47,9 @@ def main():
     reduce_factor = 8
     image = Image.open("data/archive/Image/17.jpg").reduce(reduce_factor)
 
-    lambd = -2
+    lambd = 2
     # choose scale factor for poly potential
-    beta = 1 / np.linalg.norm(np.array([255, 255, 255]), ord=1)
+    beta = -1 / np.linalg.norm(np.array([255, 255, 255]), ord=1)
 
     print(f"Cur lambda = {lambd}")
 
